@@ -1,10 +1,10 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import tensorflow.lite as tflite
+import tensorflow as tf
 
-# Load TFLite model
-interpreter = tflite.Interpreter(model_path="glaucoma_model.tflite")
+# Load the TFLite model with TensorFlow API
+interpreter = tf.lite.Interpreter(model_path="glaucoma_model.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -19,6 +19,7 @@ def predict_tflite(img_array):
 # Streamlit UI
 st.title("Glaucoma Detection (TFLite)")
 uploaded = st.file_uploader("Upload a retina image", type=["jpg", "jpeg", "png"])
+
 if uploaded:
     img = Image.open(uploaded).convert("RGB").resize((224, 224))
     st.image(img, caption="Uploaded Image")
