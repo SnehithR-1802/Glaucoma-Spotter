@@ -1,35 +1,30 @@
 import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import img_to_array
 from PIL import Image
-import os
+import tensorflow.lite as tflite
 
-st.set_page_config(page_title="Glaucoma Detection App", layout="centered")
-st.title("👁️ Glaucoma Detection App")
+# Load TFLite model
+interpreter = tflite.Interpreter(model_path="glaucoma_model.tflite")
+interpreter.allocate_tensors()
 
-# Debug: show current files
-st.text(f"Files in project: {os.listdir()}")
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
-# Load model
-try:
-    model = load_model("glaucoma_model.h5")
-    st.success("Loaded model successfully!")
-except Exception as e:
-    st.error(f"Couldn't load model: {e}")
-    model = None
+def predict_tflite(img_array):
+    interpreter.set_tensor(input_details[0]["index"], img_array)
+    interpreter.invoke()
+    output = interpreter.get_tensor(output_details[0]["index"])
+    return output[0]
 
-# Upload and classify
+# Streamlit UI
+st.title("Glaucoma Detection (TFLite)")
 uploaded = st.file_uploader("Upload a retina image", type=["jpg", "jpeg", "png"])
-if uploaded and model:
+if uploaded:
     img = Image.open(uploaded).convert("RGB").resize((224, 224))
-    st.image(img, caption="Uploaded Image", use_column_width=True)
-    arr = img_to_array(img) / 255.0
-    arr = np.expand_dims(arr, 0)
-    pred = model.predict(arr)[0][0]
-    st.subheader("Result")
-    if pred > 0.5:
-        st.error("⚠️ Positive for Glaucoma")
-    else:
-        st.success("✅ Negative for Glaucoma")
-    st.write(f"Confidence Score: {pred:.4f}")
+    st.image(img, caption="Uploaded Image")
+    img_arr = np.expand_dims(np.array(img) / 255.0, axis=0).astype(np.float32)
+
+    preds = predict_tflite(img_arr)
+    classes = ["Glaucoma", "Healthy"]
+    index = np.argmax(preds)
+    st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
