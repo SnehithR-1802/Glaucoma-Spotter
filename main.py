@@ -26,7 +26,7 @@ if uploaded:
     img_arr = np.expand_dims(np.array(img) / 255.0, axis=0).astype(np.float32)
 
 preds = predict_tflite(img_arr)
-classes = ["Healthy", "Glaucoma"]  # or the reverse if needed
+classes = ["Glaucoma", "Healthy"]  # This is the correct order based on your labels
 index = np.argmax(preds)
 st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
 
