@@ -1,10 +1,10 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import tensorflow as tf
+import tensorflow.lite as tflite
 
-# Load the TFLite model with TensorFlow API
-interpreter = tf.lite.Interpreter(model_path="glaucoma_model.tflite")
+# Load TFLite model
+interpreter = tflite.Interpreter(model_path="glaucoma_model.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -25,8 +25,7 @@ if uploaded:
     st.image(img, caption="Uploaded Image")
     img_arr = np.expand_dims(np.array(img) / 255.0, axis=0).astype(np.float32)
 
-preds = predict_tflite(img_arr)
-classes = ["Glaucoma", "Healthy"]  # This is the correct order based on your labels
-index = np.argmax(preds)
-st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
-
+    preds = predict_tflite(img_arr)
+    classes = ["Glaucoma", "Healthy"]  # make sure this order matches your model
+    index = np.argmax(preds)
+    st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
