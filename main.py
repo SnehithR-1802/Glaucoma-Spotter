@@ -25,7 +25,11 @@ if uploaded:
     st.image(img, caption="Uploaded Image")
     img_arr = np.expand_dims(np.array(img) / 255.0, axis=0).astype(np.float32)
 
-    preds = predict_tflite(img_arr)
-    classes = ["Glaucoma", "Healthy"]  # make sure this order matches your model
-    index = np.argmax(preds)
-    st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
+preds = predict_tflite(img_arr)
+
+# ✅ Add this line to debug:
+st.write(f"Raw model output: {preds}")
+
+classes = ["Healthy", "Glaucoma"]
+index = np.argmax(preds)
+st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
