@@ -20,20 +20,28 @@ def predict_tflite(img_array):
     output = interpreter.get_tensor(output_details[0]['index'])
     return output[0]  # Return the prediction array
 
-# ✅ Streamlit UI
-st.title("Glaucoma Detection")
+# Streamlit UI
+st.title("Glaucoma Detection (TFLite)")
+uploaded = st.file_uploader("Upload a retina image", type=["jpg", "jpeg", "png"])
 
-uploaded_file = st.file_uploader("Upload an eye image", type=["jpg", "jpeg", "png"])
+if uploaded:
+    img = Image.open(uploaded).convert("RGB")
+    img = img.resize((224, 224))  # Adjust if needed based on your model
+    st.image(img, caption="Uploaded Image")
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).resize((224, 224))  # Match your training size
-    img_arr = np.array(image) / 255.0
+    img_arr = np.array(img, dtype=np.float32) / 255.0
+    img_arr = np.expand_dims(img_arr, axis=0)
 
-    preds = predict_tflite(img_arr)  # ✅ This line should now work
+    # Ensure correct dtype and shape
+    expected_shape = input_details[0]["shape"]
+    expected_dtype = input_details[0]["dtype"]
 
-    # ✅ DEBUG: show raw predictions
-    st.write(f"Raw model output: {preds}")
+    img_arr = img_arr.astype(expected_dtype)
 
-    classes = ["Glaucoma", "Healthy"]  # Try reversing if predictions are wrong
-    index = np.argmax(preds)
-    st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
+    if img_arr.shape != tuple(expected_shape):
+        st.error(f"Input shape mismatch: expected {expected_shape}, got {img_arr.shape}")
+    else:
+        preds = predict_tflite(img_arr)
+        index = np.argmax(preds)
+        classes = ["Healthy", "Glaucoma"]  # Reverse if needed
+        st.write(f"**Prediction:** {classes[index]} ({100 * preds[index]:.2f}% confidence)")
