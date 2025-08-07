@@ -34,4 +34,5 @@ if uploaded:
         preds = predict_tflite(img_arr)
         index = np.argmax(preds)
         classes = ["Healthy", "Glaucoma"]  # Adjust if needed
+        st.write(f"Raw model output: {preds}")
         st.write(f"**Prediction:** {classes[index]} ({100 * preds[0][index]:.2f}% confidence)")
