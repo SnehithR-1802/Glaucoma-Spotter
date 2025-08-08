@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import tensorflow as tf
 from PIL import Image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 # Load the TFLite model
 interpreter = tf.lite.Interpreter(model_path="glaucoma_model.tflite")
@@ -21,13 +22,17 @@ uploaded = st.file_uploader("Upload a retina image", type=["jpg", "jpeg", "png"]
 
 if uploaded:
     img = Image.open(uploaded).convert("RGB")
-    img = img.resize((224, 224))  # adjust to your model's input size
+    img = img.resize((224, 224))  # same as training
+
     st.image(img, caption="Uploaded Image")
 
-    img_arr = np.array(img, dtype=np.float32) / 255.0
+    # Convert to numpy array & apply MobileNetV2 preprocessing
+    img_arr = np.array(img, dtype=np.float32)
+    img_arr = preprocess_input(img_arr)  # <<< CRUCIAL STEP
     img_arr = np.expand_dims(img_arr, axis=0)
-    img_arr = img_arr.astype(input_details[0]["dtype"])  # match TFLite input dtype
+    img_arr = img_arr.astype(input_details[0]["dtype"])  # match dtype with TFLite model
 
+    # Safety check for shape mismatch
     if img_arr.shape != tuple(input_details[0]["shape"]):
         st.error(f"Input shape mismatch: expected {input_details[0]['shape']}, got {img_arr.shape}")
     else:
