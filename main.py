@@ -1,38 +1,35 @@
-import streamlit as st
-import numpy as np
-from PIL import Image
-import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.preprocessing import image
+from keras.applications.resnet import preprocess_input
+import numpy as np
 
 # Load your model
 model = load_model("glaucoma_model.h5")
 
-st.title("👁 Glaucoma Detection App")
+IMG_SIZE = (224, 224)  # Must match training
 
-# Upload image
-uploaded_file = st.file_uploader("Upload a retina image", type=["jpg", "jpeg", "png"])
-
-if uploaded_file is not None:
-    # Load and display the image
-    img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption="Uploaded Image", use_column_width=True)
-
-    # Resize to match training input shape
-    img = img.resize((224, 224))  # MobileNetV2 trained size
-
+def predict_image(img_path):
+    # Load and resize
+    img = image.load_img(img_path, target_size=IMG_SIZE)
+    
     # Convert to array
-    img_arr = np.array(img, dtype=np.float32)
-
-    # Expand dims & preprocess exactly as in training
-    img_arr = np.expand_dims(img_arr, axis=0)
-    img_arr = preprocess_input(img_arr)
-
+    img_array = image.img_to_array(img)
+    
+    # Add batch dimension
+    img_batch = np.expand_dims(img_array, axis=0)
+    
+    # Preprocess EXACTLY like training
+    img_preprocessed = preprocess_input(img_batch)
+    
     # Predict
-    prediction = model.predict(img_arr)
-    st.write("🔍 Raw model output:", prediction)
+    prediction = model.predict(img_preprocessed)
+    
+    # Convert to class label
+    class_idx = np.argmax(prediction, axis=1)[0]
+    class_labels = ["Glaucoma", "Healthy"]  # Replace with your exact order
+    return class_labels[class_idx], prediction
 
-    # Interpret prediction
-    class_names = ["Healthy", "Glaucoma"]
-    predicted_class = class_names[np.argmax(prediction)]
-    st.write(f"**Prediction:** {predicted_class}")
+# Example:
+label, raw_pred = predict_image("test_image.jpg")
+print(f"Prediction: {label}")
+print(f"Raw output: {raw_pred}")
