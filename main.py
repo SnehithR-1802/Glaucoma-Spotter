@@ -32,6 +32,6 @@ if uploaded_file is not None:
         img.save(tmp.name, format="JPEG")
         label, raw_pred = predict_image(tmp.name)
 
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+    st.image(img, caption="Uploaded Image", use_container_width=True)
     st.write(f"**Prediction:** {label}")
     st.write(f"**Raw probabilities:** {raw_pred}")
