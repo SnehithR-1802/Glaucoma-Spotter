@@ -18,6 +18,8 @@ def predict_image(img_path):
     img_batch = np.expand_dims(img_array, axis=0)
     img_preprocessed = preprocess_input(img_batch)
     prediction = model.predict(img_preprocessed)
+    st.write("Input range:", img_preprocessed.min(), img_preprocessed.max())
+    st.write("Model output:", prediction)
     class_idx = np.argmax(prediction, axis=1)[0]
     return class_labels[class_idx], prediction
 
