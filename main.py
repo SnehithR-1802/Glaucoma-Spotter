@@ -9,6 +9,10 @@ import tempfile
 # Load model once
 model = load_model("glaucoma_model.h5")
 
+st.write("Model summary:")
+model.summary(print_fn=lambda x: st.write(x))
+
+st.write("Number of classes:", model.output_shape[-1])
 IMG_SIZE = (224, 224)
 class_labels = ["Glaucoma", "Healthy"]  # Replace with your actual training order
 
