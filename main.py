@@ -9,8 +9,8 @@ import tempfile
 # Load model once
 model = load_model("glaucoma_model.h5")
 
-st.write("Final layer weights:")
-st.write(model.layers[-1].get_weights())
+st.write("Final layer biases:")
+st.write(model.layers[-1].get_weights()[1])
 
 st.write("Model summary:")
 model.summary(print_fn=lambda x: st.write(x))
