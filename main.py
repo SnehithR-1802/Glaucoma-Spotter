@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 import tempfile
 
-# Load model once
+
 model = load_model("glaucoma_model.h5")
 
 st.write("Model summary:")
@@ -27,12 +27,11 @@ def predict_image(img_path):
     class_idx = np.argmax(prediction, axis=1)[0]
     return class_labels[class_idx], prediction
 
-# Streamlit UI
 st.title("Glaucoma Detector")
 
 uploaded_file = st.file_uploader("Upload an eye image", type=["jpg", "jpeg", "png"])
 if uploaded_file is not None:
-    # Save to temp file
+    
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         img = Image.open(uploaded_file).convert("RGB")
         img.save(tmp.name, format="JPEG")
